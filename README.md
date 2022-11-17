@@ -1,7 +1,7 @@
 About
 =====
 
-Implementation of [Neural Programmer-Interpreters](http://arxiv.org/abs/1511.06279) with Keras.
+Implementation of [Neural Programmer-Interpreters](http://arxiv.org/abs/1511.06279) with PyTorch for the [Imitation Learning for Robotics](http://www.cs.toronto.edu/~florian/courses/csc2626w22/) class at University of Toronto. Based on the Keras implementation by mokemokechicken.
 
 How to Demo
 ===========
