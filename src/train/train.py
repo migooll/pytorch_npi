@@ -1,6 +1,8 @@
+import os
 from npi.add.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH, MAX_PROGRAM_NUM
 from npi.core import MAX_ARG_NUM, ARG_DEPTH
-from model.model import NPI
+from npi.add.lib import AdditionProgramSet
+from pytorch_model.model import NPI
 
 from pathlib import Path
 import  pickle
@@ -73,11 +75,13 @@ def train(data_dir="data/train.pkl"):
     with data_path.open('rb') as dp:
         dataset = pickle.load(dp)
     
-    train_loader = DataLoader(dataset[56:58], collate_fn=train_collate_fn)
-    trainer = pl.Trainer()
+    train_loader = DataLoader(dataset, collate_fn=train_collate_fn, num_workers=4)
+    trainer = pl.Trainer(max_epochs=10, accelerator='gpu')
     state_dim = MAX_ARG_NUM + FIELD_ROW * FIELD_DEPTH
-    model = NPI(state_dim, MAX_PROGRAM_NUM, MAX_ARG_NUM, ARG_DEPTH)
+    program_set = AdditionProgramSet()
+    model = NPI(state_dim, MAX_PROGRAM_NUM, MAX_ARG_NUM, ARG_DEPTH, program_set=program_set)
     trainer.fit(model, train_dataloaders=train_loader)
 
 if __name__ == '__main__':
     train()
+    # os.system('shutdown -s')

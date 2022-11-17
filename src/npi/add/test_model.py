@@ -5,10 +5,11 @@ import pickle
 
 from npi.add.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
 from npi.add.lib import AdditionEnv, AdditionProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
-from npi.add.model import AdditionNPIModel
+# from npi.add.model import AdditionNPIModel
 from npi.core import ResultLogger, RuntimeSystem
 from npi.terminal_core import TerminalNPIRunner, Terminal
 
+from pytorch_model.model import NPI
 
 def main(stdscr, model_path: str, num: int, result_logger: ResultLogger):
     terminal = Terminal(stdscr, create_char_map())
@@ -16,11 +17,13 @@ def main(stdscr, model_path: str, num: int, result_logger: ResultLogger):
     program_set = AdditionProgramSet()
     addition_env = AdditionEnv(FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH)
 
-    questions = create_questions(num)
+    questions = create_questions(num, max_number=10000000)
     if DEBUG_MODE:
         questions = questions[-num:]
     system = RuntimeSystem(terminal=terminal)
-    npi_model = AdditionNPIModel(system, model_path, program_set)
+    # npi_model = AdditionNPIModel(system, model_path, program_set)
+    npi_model = NPI.load_from_checkpoint(model_path)
+    npi_model.program_set = AdditionProgramSet()
     npi_runner = TerminalNPIRunner(terminal, npi_model, recording=False)
     npi_runner.verbose = DEBUG_MODE
     correct_count = wrong_count = 0
@@ -39,8 +42,9 @@ def main(stdscr, model_path: str, num: int, result_logger: ResultLogger):
 if __name__ == '__main__':
     import sys
     DEBUG_MODE = os.environ.get('DEBUG')
-    model_path_ = sys.argv[1]
-    num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
+    # model_path_ = sys.argv[1]
+    model_path_ = "./lightning_logs/version_6/checkpoints/epoch=9-step=103010.ckpt"
+    num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 100
     log_filename = sys.argv[3] if len(sys.argv) > 3 else 'result.log'
     cc, wc = curses.wrapper(main, model_path_, num_data, ResultLogger(log_filename))
     print("Accuracy %s(OK=%d, NG=%d)" % (cc/(cc+wc), cc, wc))

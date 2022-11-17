@@ -42,7 +42,7 @@ if __name__ == '__main__':
         log_filename = 'result.log'
     else:
         output_filename = sys.argv[1] if len(sys.argv) > 1 else None
-        num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
+        num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 10000
         log_filename = sys.argv[3] if len(sys.argv) > 3 else 'result.log'
     curses.wrapper(main, output_filename, num_data, ResultLogger(log_filename))
     print("create %d training data" % num_data)
