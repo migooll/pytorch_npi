@@ -18,11 +18,8 @@ class SortingEnv:
         self.reset()
 
     def reset(self):
-        """
-        Move both the pointers to the left
-        """
         self.screen.fill(0)
-        self.pointers = [0] * self.screen.height  # leftmost
+        self.pointers = [self.screen.width-1] * self.screen.height  # rightmost
 
     def get_observation(self) -> np.ndarray:
         value = []
@@ -78,7 +75,7 @@ class WriteProgram(Program):
     WRITE_TO_OUTPUT = 1
 
     def do(self, env: SortingEnv, args: IntegerArguments):
-        row = 2 if args.decode_at(0) == self.WRITE_TO_CARRY else 3
+        row = 1
         digit = args.decode_at(1)
         env.write(row, digit+1)
 
@@ -86,10 +83,11 @@ class WriteProgram(Program):
 class SortingProgramSet:
     NOP = Program('NOP')
     MOVE_PTR = MovePtrProgram('MOVE_PTR', 2, 2)  # PTR_KIND(2), LEFT_OR_RIGHT(2)
+    WRITE = WriteProgram('WRITE', 1, 10)       # OUT(1), DIGITS(10)
     BUBBLE_SORT = Program('BUBBLE_SORT') # perform bubble sort in ascending order - BUBBLE, RESET
-    BUBBLE = Program('BUBBLE') # Perform one sweep of pointers left to right - ACT, BSTEP
-    RESET = Program('RESET') # Move both pointers all the way to the left - LSHIFT
-    BSTEP = Program('BSTEP') # Conditionally swap and advance pointers - COMPSWAP, RSHIFT
+    BUBBLE = Program('BUBBLE') # Perform one sweep of pointers right to left - ACT, BSTEP
+    RESET = Program('RESET') # Move both pointers all the way to the right - RSHIFT
+    BSTEP = Program('BSTEP') # Conditionally swap and advance pointers - COMPSWAP, LSHIFT
     COMPSWAP = Program('COMPSWAP') # ACT
     LSHIFT = Program('LSHIFT') # ACT
     RSHIFT = Program('RSHIFT') # ACT
@@ -292,9 +290,9 @@ def create_random_questions(num=100, max_number=10000):
 
 
 def run_npi(sorting_env, npi_runner, program, data):
-    data['expect'] = data['in1'] + data['in2']
+    data['expect'] = sorted(data['in1'])
 
-    sorting_env.setup_problem(data['in1'], data['in2'])
+    sorting_env.setup_problem(data['in1'])
 
     npi_runner.reset()
     npi_runner.display_env(sorting_env, force=True)
