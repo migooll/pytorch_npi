@@ -3,6 +3,9 @@ from random import random
 
 import numpy as np
 
+import os, sys
+sys.path.append("/home/aniket/Desktop/Fall22/Imitation/project/pytorch_npi/src")
+
 from npi.core import Program, IntegerArguments, StepOutput, NPIStep, PG_CONTINUE, PG_RETURN
 from npi.terminal_core import Screen, Terminal
 
@@ -36,6 +39,8 @@ class SortingEnv:
         return ret
 
     def setup_problem(self, num1):
+        # convert num list to a number for screen print
+        num1 = int(''.join(map(str, num1)))
         for i, s in enumerate(reversed("%s" % num1)):
             self.screen[0, -(i+1)] = int(s) + 1
         
@@ -60,6 +65,7 @@ class MovePtrProgram(Program):
     output_to_env = True
     PTR_IN1 = 0
     PTR_IN2 = 1
+    PTR_CTR = 2
     
     TO_LEFT = 0
     TO_RIGHT = 1
@@ -83,20 +89,21 @@ class WriteProgram(Program):
 class SortingProgramSet:
     NOP = Program('NOP')
     MOVE_PTR = MovePtrProgram('MOVE_PTR', 2, 2)  # PTR_KIND(2), LEFT_OR_RIGHT(2)
-    WRITE = WriteProgram('WRITE', 1, 10)       # OUT(1), DIGITS(10)
-    BUBBLE_SORT = Program('BUBBLE_SORT') # perform bubble sort in ascending order - BUBBLE, RESET
+    SWAP = Program('SWAP', 1, 1) # Swaps PTR1 value (1 option) with PTR2 value (1 option)
+    BUBBLE_SORT = Program('BUBBLE_SORT') # Top-Level Bubble Sort Program (calls children routines) - BUBBLE, RESET
     BUBBLE = Program('BUBBLE') # Perform one sweep of pointers right to left - ACT, BSTEP
     RESET = Program('RESET') # Move both pointers all the way to the right - RSHIFT
     BSTEP = Program('BSTEP') # Conditionally swap and advance pointers - COMPSWAP, LSHIFT
-    COMPSWAP = Program('COMPSWAP') # ACT
-    LSHIFT = Program('LSHIFT') # ACT
-    RSHIFT = Program('RSHIFT') # ACT
+    COMPSWAP = Program('COMPSWAP') # Check if values need to be swapped
+    LSHIFT = Program('LSHIFT') # Shifts value Pointers Left (after COMPSWAP)
+    RSHIFT = Program('RSHIFT') # Shifts value Pointers Right (after RESET)
 
     def __init__(self):
         self.map = {}
         self.program_id = 0
         self.register(self.NOP)
         self.register(self.MOVE_PTR)
+        self.register(self.SWAP)
         self.register(self.BUBBLE_SORT)
         self.register(self.BUBBLE)
         self.register(self.RESET)
@@ -121,6 +128,7 @@ class SortingTeacher(NPIStep):
         self.step_queue_stack = []
         self.sub_program = {}
         self.register_subprogram(program_set.MOVE_PTR, self.pg_primitive)
+        self.register_subprogram(program_set.SWAP   , self.pg_swap)
         self.register_subprogram(program_set.BUBBLE_SORT   , self.pg_bubblesort)
         self.register_subprogram(program_set.BUBBLE     , self.pg_bubble)
         self.register_subprogram(program_set.RESET    , self.pg_reset)
@@ -170,13 +178,18 @@ class SortingTeacher(NPIStep):
     def pg_primitive(env_observation: np.ndarray, arguments: IntegerArguments):
         return None
 
-    def pg_add(self, env_observation: np.ndarray, arguments: IntegerArguments):
+    def pg_swap(self, env_observation: np.ndarray, arguments: IntegerArguments):
         ret = []
-        (in1, in2, carry, output), (a1, a2, a3) = self.decode_params(env_observation, arguments)
-        if in1 == 0 and in2 == 0 and carry == 0:
-            return None
-        ret.append((self.pg_set.ADD1, None))
-        ret.append((self.pg_set.LSHIFT, None))
+        p = self.pg_set
+        
+        (in1), (a1, a2, a3) = self.decode_params(env_observation, arguments)
+        
+        # if in1 < in2:
+        #     in1, in2 = in2, in1
+        
+        # if swap-> swap and move the pointers to left or just move the pointers to left
+        ret.append((p.LSHIFT, None))
+        
         return ret
 
     def pg_bubblesort(self, env_observation: np.ndarray, arguments: IntegerArguments):
@@ -190,60 +203,51 @@ class SortingTeacher(NPIStep):
 
     def pg_bubble(self, env_observation: np.ndarray, arguments: IntegerArguments):
         # act and bstep
-        # act - move ptr2 right 
         ret = []
         p = self.pg_set
 
-        (in1, in2), (a1, a2, a3) = self.decode_params(env_observation, arguments)
-
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_RIGHT))) # move ptr2 right
+        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT))) # move ptr 1 to left
         ret.append((p.BSTEP, None)) 
+
         return ret    
 
     def pg_reset(self, env_observation: np.ndarray, arguments: IntegerArguments):
-        # Move both pointers all the way to the left
+        # Move both pointers all the way to the right
         ret = []
         p = self.pg_set
 
-        (in1, in2), (a1, a2, a3) = self.decode_params(env_observation, arguments)
-
+        # but we need to move both the pointers all the way right
+        ret.append((p.RSHIFT, None))
         
+        return ret
+        
+    def pg_bstep(self, env_observation: np.ndarray, arguments: IntegerArguments):
+        # compswap and lshift
+        ret = []
+        p = self.pg_set
+
+        ret.append((p.COMPSWAP, None))
+        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT)))
+        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN2, p.MOVE_PTR.TO_LEFT)))
+
+        return ret
+
+    def pg_compswap(self, env_observation: np.ndarray, arguments: IntegerArguments):
+        # swap
+        ret = []
+        p = self.pg_set
+
+        ret.append((p.SWAP, None))
+
+        return ret
 
     
-    def pg_add1(self, env_observation: np.ndarray, arguments: IntegerArguments):
-        ret = []
-        p = self.pg_set
-        (in1, in2, carry, output), (a1, a2, a3) = self.decode_params(env_observation, arguments)
-        result = self.sum_ch_list([in1, in2, carry])
-        ret.append((p.WRITE, (p.WRITE.WRITE_TO_OUTPUT, result % 10)))
-        if result > 9:
-            ret.append((p.CARRY, None))
-        ret[-1] = (PG_RETURN, ret[-1][0], ret[-1][1])
-        return ret
-
-    @staticmethod
-    def sum_ch_list(ch_list):
-        ret = 0
-        for ch in ch_list:
-            if ch > 0:
-                ret += ch - 1
-        return ret
-
-    def pg_carry(self, env_observation: np.ndarray, arguments: IntegerArguments):
-        ret = []
-        p = self.pg_set
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_CARRY, p.MOVE_PTR.TO_LEFT)))
-        ret.append((p.WRITE, (p.WRITE.WRITE_TO_CARRY, 1)))
-        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CARRY, p.MOVE_PTR.TO_RIGHT)))
-        return ret
-
     def pg_lshift(self, env_observation: np.ndarray, arguments: IntegerArguments):
         ret = []
         p = self.pg_set
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT)))
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN2, p.MOVE_PTR.TO_LEFT)))
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_CARRY, p.MOVE_PTR.TO_LEFT)))
-        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_OUT, p.MOVE_PTR.TO_LEFT)))
+        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CTR, p.MOVE_PTR.TO_LEFT)))
         return ret
 
     def pg_rshift(self, env_observation: np.ndarray, arguments: IntegerArguments):
@@ -251,8 +255,7 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_RIGHT)))
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN2, p.MOVE_PTR.TO_RIGHT)))
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_CARRY, p.MOVE_PTR.TO_RIGHT)))
-        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_OUT, p.MOVE_PTR.TO_RIGHT)))
+        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CTR, p.MOVE_PTR.TO_RIGHT)))
         return ret
 
 
@@ -264,35 +267,22 @@ def create_char_map():
 
 def create_questions(num=100, max_number=10000):
     questions = []
-    for in1 in range(10):
-        for in2 in range(10):
-            questions.append(dict(in1=in1, in2=in2))
+    # 10 1 digit examples
+    for _ in range(10):
+        questions.append(dict(inp=np.random.randint(0, 9, 1)))
+    
+    # 50 2-10 digit examples
+    for i in range(2, 11):
+        for _ in range(50):
+            questions.append(dict(inp=np.random.randint(0, 9, i)))
 
-    for _ in range(100):
-        questions.append(dict(in1=int(random() * 100), in2=int(random() * 100)))
-
-    for _ in range(100):
-        questions.append(dict(in1=int(random() * 1000), in2=int(random() * 1000)))
-
-    questions += [
-        dict(in1=104, in2=902),
-    ]
-
-    questions += create_random_questions(num=num, max_number=max_number)
-    return questions
-
-
-def create_random_questions(num=100, max_number=10000):
-    questions = []
-    for _ in range(num):
-        questions.append(dict(in1=int(random() * max_number), in2=int(random() * max_number)))
     return questions
 
 
 def run_npi(sorting_env, npi_runner, program, data):
-    data['expect'] = sorted(data['in1'])
-
-    sorting_env.setup_problem(data['in1'])
+    data['expect'] = sorted(data['inp'])
+    
+    sorting_env.setup_problem(data['inp'])
 
     npi_runner.reset()
     npi_runner.display_env(sorting_env, force=True)
@@ -302,4 +292,9 @@ def run_npi(sorting_env, npi_runner, program, data):
     data['correct'] = data['result'] == data['expect']
 
     
+if __name__ == "__main__":
+    q = create_questions(num=100, max_number=10000)
+    
+    sorting_env = SortingEnv(1, 10, 9)
+    sorting_env.setup_problem(q[0]['inp'])
     

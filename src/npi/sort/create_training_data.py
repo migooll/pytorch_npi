@@ -4,11 +4,13 @@ import curses
 import pickle
 from copy import copy
 
+import os, sys
+sys.path.append("/home/aniket/Desktop/Fall22/Imitation/project/pytorch_npi/src")
+
 from npi.sort.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
 from npi.sort.lib import SortingEnv, SortingProgramSet, SortingTeacher, create_char_map, create_questions, run_npi
 from npi.core import ResultLogger
 from npi.terminal_core import TerminalNPIRunner, Terminal
-
 
 def main(stdscr, filename: str, num: int, result_logger: ResultLogger):
     terminal = Terminal(stdscr, create_char_map())
@@ -24,7 +26,7 @@ def main(stdscr, filename: str, num: int, result_logger: ResultLogger):
     for data in questions:
         sorting_env.reset()
         q = copy(data)
-        run_npi(sorting_env, npi_runner, program_set.ADD, data)
+        run_npi(sorting_env, npi_runner, program_set.BUBBLE_SORT, data)
         steps_list.append({"q": q, "steps": npi_runner.step_list})
         result_logger.write(data)
         terminal.add_log(data)

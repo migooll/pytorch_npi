@@ -175,6 +175,7 @@ class AdditionTeacher(NPIStep):
     def pg_add(self, env_observation: np.ndarray, arguments: IntegerArguments):
         ret = []
         (in1, in2, carry, output), (a1, a2, a3) = self.decode_params(env_observation, arguments)
+        
         if in1 == 0 and in2 == 0 and carry == 0:
             return None
         ret.append((self.pg_set.ADD1, None))
@@ -198,6 +199,7 @@ class AdditionTeacher(NPIStep):
         for ch in ch_list:
             if ch > 0:
                 ret += ch - 1
+        
         return ret
 
     def pg_carry(self, env_observation: np.ndarray, arguments: IntegerArguments):
@@ -206,6 +208,7 @@ class AdditionTeacher(NPIStep):
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_CARRY, p.MOVE_PTR.TO_LEFT)))
         ret.append((p.WRITE, (p.WRITE.WRITE_TO_CARRY, 1)))
         ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CARRY, p.MOVE_PTR.TO_RIGHT)))
+        
         return ret
 
     def pg_lshift(self, env_observation: np.ndarray, arguments: IntegerArguments):
