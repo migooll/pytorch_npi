@@ -18,6 +18,7 @@ class SortingEnv:
         self.screen = Screen(height, width)
         self.num_chars = num_chars
         self.pointers = [0] * height
+        self.array_len = 0
         self.reset()
 
     def reset(self):
@@ -27,7 +28,7 @@ class SortingEnv:
     def get_observation(self) -> np.ndarray:
         value = []
         for row in range(len(self.pointers)):
-            value.append(self.to_one_hot(self.screen[row, self.pointers[row]]))
+            value.append(self.to_one_hot(self.screen[0, self.pointers[row]]))
         return np.array(value)  # shape of FIELD_ROW * FIELD_DEPTH
 
     def to_one_hot(self, ch):
@@ -40,6 +41,7 @@ class SortingEnv:
 
     def setup_problem(self, num1):
         # convert num list to a number for screen print
+        self.array_len = len(num1) - 1 
         num1 = int(''.join(map(str, num1)))
         for i, s in enumerate(reversed("%s" % num1)):
             self.screen[0, -(i+1)] = int(s) + 1
@@ -49,9 +51,12 @@ class SortingEnv:
             self.pointers[row] += 1 if left_or_right == 1 else -1  # LEFT is 0, RIGHT is 1
             self.pointers[row] %= self.screen.width
 
-    def write(self, row, ch):
+    def write(self, row, ptr1, ptr2, ch):
         if 0 <= row < self.screen.height and 0 <= ch < self.num_chars:
-            self.screen[row, self.pointers[row]] = ch
+            digit1 = self.screen[0, self.pointers[ptr1]] - 1
+            digit2 = self.screen[0, self.pointers[ptr2]] - 1
+            self.screen[row, self.pointers[ptr1]] = digit2
+            self.screen[row, self.pointers[ptr2]] = digit1
 
     def get_output(self):
         s = ""
@@ -76,20 +81,24 @@ class MovePtrProgram(Program):
         env.move_pointer(ptr_kind, left_or_right)
 
 
-class WriteProgram(Program):
+class SwapProgram(Program):
     output_to_env = True
-    WRITE_TO_OUTPUT = 1
+
+    PTR_IN1 = 0
+    PTR_IN2 = 1
+    PTR_CTR = 2
 
     def do(self, env: SortingEnv, args: IntegerArguments):
-        row = 1
-        digit = args.decode_at(1)
-        env.write(row, digit+1)
+        row = 0
+        ptr1 = args.decode_at(0)
+        ptr2 = args.decode_at(1)
+        env.write(row, ptr1, ptr2, ch=1)
 
 
 class SortingProgramSet:
     NOP = Program('NOP')
-    MOVE_PTR = MovePtrProgram('MOVE_PTR', 2, 2)  # PTR_KIND(2), LEFT_OR_RIGHT(2)
-    SWAP = Program('SWAP', 1, 1) # Swaps PTR1 value (1 option) with PTR2 value (1 option)
+    MOVE_PTR = MovePtrProgram('MOVE_PTR', 3, 2)  # PTR_KIND(2), LEFT_OR_RIGHT(2)
+    SWAP = SwapProgram('SWAP', 3, 3) # Swaps PTR1 value (3 option) with PTR2 value (3 option)
     BUBBLE_SORT = Program('BUBBLE_SORT') # Top-Level Bubble Sort Program (calls children routines) - BUBBLE, RESET
     BUBBLE = Program('BUBBLE') # Perform one sweep of pointers right to left - ACT, BSTEP
     RESET = Program('RESET') # Move both pointers all the way to the right - RSHIFT
@@ -128,7 +137,7 @@ class SortingTeacher(NPIStep):
         self.step_queue_stack = []
         self.sub_program = {}
         self.register_subprogram(program_set.MOVE_PTR, self.pg_primitive)
-        self.register_subprogram(program_set.SWAP   , self.pg_swap)
+        self.register_subprogram(program_set.SWAP   , self.pg_primitive)
         self.register_subprogram(program_set.BUBBLE_SORT   , self.pg_bubblesort)
         self.register_subprogram(program_set.BUBBLE     , self.pg_bubble)
         self.register_subprogram(program_set.RESET    , self.pg_reset)
@@ -188,7 +197,7 @@ class SortingTeacher(NPIStep):
         #     in1, in2 = in2, in1
         
         # if swap-> swap and move the pointers to left or just move the pointers to left
-        ret.append((p.LSHIFT, None))
+        # ret.append((p.LSHIFT, None))
         
         return ret
 
@@ -206,7 +215,7 @@ class SortingTeacher(NPIStep):
         ret = []
         p = self.pg_set
 
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT))) # move ptr 1 to left
+        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT))) # move ptr 2 to right
         ret.append((p.BSTEP, None)) 
 
         return ret    
@@ -237,7 +246,7 @@ class SortingTeacher(NPIStep):
         ret = []
         p = self.pg_set
 
-        ret.append((p.SWAP, None))
+        ret.append((p.SWAP, (p.SWAP.PTR_IN1, p.SWAP.PTR_IN2)))
 
         return ret
 
@@ -268,8 +277,8 @@ def create_char_map():
 def create_questions(num=100, max_number=10000):
     questions = []
     # 10 1 digit examples
-    for _ in range(10):
-        questions.append(dict(inp=np.random.randint(0, 9, 1)))
+    #for _ in range(10):
+    #    questions.append(dict(inp=np.random.randint(0, 9, 1)))
     
     # 50 2-10 digit examples
     for i in range(2, 11):

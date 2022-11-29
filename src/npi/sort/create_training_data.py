@@ -5,7 +5,7 @@ import pickle
 from copy import copy
 
 import os, sys
-sys.path.append("/home/aniket/Desktop/Fall22/Imitation/project/pytorch_npi/src")
+sys.path.append(".")
 
 from npi.sort.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
 from npi.sort.lib import SortingEnv, SortingProgramSet, SortingTeacher, create_char_map, create_questions, run_npi
