@@ -1,5 +1,6 @@
 # coding: utf-8
-import os
+import os, sys
+sys.path.append(".")
 import curses
 import pickle
 from copy import copy

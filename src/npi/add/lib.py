@@ -265,6 +265,8 @@ def create_random_questions(num=100, max_number=10000):
 
 def run_npi(addition_env, npi_runner, program, data):
     data['expect'] = data['in1'] + data['in2']
+    if data['in1']==5 and data['in2']==6:
+        breaker=1
     addition_env.setup_problem(data['in1'], data['in2'])
 
     npi_runner.reset()

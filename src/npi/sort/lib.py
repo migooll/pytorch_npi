@@ -1,5 +1,5 @@
 # coding: utf-8
-from random import random
+import random
 
 import numpy as np
 
@@ -41,9 +41,9 @@ class SortingEnv:
 
     def setup_problem(self, num1):
         # convert num list to a number for screen print
-        self.array_len = len(num1) - 1 
-        num1 = int(''.join(map(str, num1)))
-        for i, s in enumerate(reversed("%s" % num1)):
+        self.array_len = len(num1) 
+        num1 = ''.join(map(str, num1))
+        for i, s in enumerate(reversed(num1)):
             self.screen[0, -(i+1)] = int(s) + 1
         
     def move_pointer(self, row, left_or_right):
@@ -51,19 +51,20 @@ class SortingEnv:
             self.pointers[row] += 1 if left_or_right == 1 else -1  # LEFT is 0, RIGHT is 1
             self.pointers[row] %= self.screen.width
 
-    def write(self, row, ptr1, ptr2, ch):
-        if 0 <= row < self.screen.height and 0 <= ch < self.num_chars:
-            digit1 = self.screen[0, self.pointers[ptr1]] - 1
-            digit2 = self.screen[0, self.pointers[ptr2]] - 1
+    def write(self, row, ptr1, ptr2):
+        digit1 = self.screen[0, self.pointers[ptr1]] 
+        digit2 = self.screen[0, self.pointers[ptr2]]
+        if 0 <= row < self.screen.height and 0 <= digit1 < self.num_chars \
+            and 0 <= digit2 < self.num_chars:    
             self.screen[row, self.pointers[ptr1]] = digit2
             self.screen[row, self.pointers[ptr2]] = digit1
 
     def get_output(self):
-        s = ""
-        for ch in self.screen[3]:
+        s = []
+        for ch in self.screen[0]:
             if ch > 0:
-                s += "%s" % (ch-1)
-        return int(s or "0")
+                s.append(int(ch - 1))
+        return s
 
 
 class MovePtrProgram(Program):
@@ -92,7 +93,7 @@ class SwapProgram(Program):
         row = 0
         ptr1 = args.decode_at(0)
         ptr2 = args.decode_at(1)
-        env.write(row, ptr1, ptr2, ch=1)
+        env.write(row, ptr1, ptr2)
 
 
 class SortingProgramSet:
@@ -187,25 +188,13 @@ class SortingTeacher(NPIStep):
     def pg_primitive(env_observation: np.ndarray, arguments: IntegerArguments):
         return None
 
-    def pg_swap(self, env_observation: np.ndarray, arguments: IntegerArguments):
-        ret = []
-        p = self.pg_set
-        
-        (in1), (a1, a2, a3) = self.decode_params(env_observation, arguments)
-        
-        # if in1 < in2:
-        #     in1, in2 = in2, in1
-        
-        # if swap-> swap and move the pointers to left or just move the pointers to left
-        # ret.append((p.LSHIFT, None))
-        
-        return ret
-
     def pg_bubblesort(self, env_observation: np.ndarray, arguments: IntegerArguments):
         # bubble and reset
         ret = []
         p = self.pg_set
-
+        (in1, in2, in3), (a1, a2, a3) = self.decode_params(env_observation, arguments)
+        if in3 == 0:
+            return None
         ret.append((p.BUBBLE, None))
         ret.append((p.RESET, None))
         return ret
@@ -216,8 +205,11 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
 
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT))) # move ptr 2 to right
-        ret.append((p.BSTEP, None)) 
-
+        # TODO Add len forloop
+        for bstep in range(self.array_len - 1):
+            ret.append((p.BSTEP, None)) 
+        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_RIGHT)))
+        ret[-1] = (PG_RETURN, ret[-1][0], ret[-1][1])
         return ret    
 
     def pg_reset(self, env_observation: np.ndarray, arguments: IntegerArguments):
@@ -226,7 +218,9 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
 
         # but we need to move both the pointers all the way right
-        ret.append((p.RSHIFT, None))
+        for rshift in range(self.array_len - 1):
+            ret.append((p.RSHIFT, None))
+        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CTR, p.MOVE_PTR.TO_LEFT)))
         
         return ret
         
@@ -236,18 +230,19 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
 
         ret.append((p.COMPSWAP, None))
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT)))
-        ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN2, p.MOVE_PTR.TO_LEFT)))
-
+        ret.append((PG_RETURN, p.LSHIFT, None))
+        
         return ret
 
     def pg_compswap(self, env_observation: np.ndarray, arguments: IntegerArguments):
         # swap
         ret = []
         p = self.pg_set
-
-        ret.append((p.SWAP, (p.SWAP.PTR_IN1, p.SWAP.PTR_IN2)))
-
+        (in1, in2, in3), (a1, a2, a3) = self.decode_params(env_observation, arguments)
+        if in1 > in2:
+            ret.append((PG_RETURN, p.SWAP, (p.SWAP.PTR_IN1, p.SWAP.PTR_IN2)))
+            return ret
+        ret.append((PG_RETURN, None, None))
         return ret
 
     
@@ -256,7 +251,9 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT)))
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN2, p.MOVE_PTR.TO_LEFT)))
-        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CTR, p.MOVE_PTR.TO_LEFT)))
+
+        ret[-1] = (PG_RETURN, ret[-1][0], ret[-1][1])
+        
         return ret
 
     def pg_rshift(self, env_observation: np.ndarray, arguments: IntegerArguments):
@@ -264,7 +261,9 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_RIGHT)))
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN2, p.MOVE_PTR.TO_RIGHT)))
-        ret.append((PG_RETURN, p.MOVE_PTR, (p.MOVE_PTR.PTR_CTR, p.MOVE_PTR.TO_RIGHT)))
+
+        ret[-1] = (PG_RETURN, ret[-1][0], ret[-1][1])
+
         return ret
 
 
@@ -275,15 +274,11 @@ def create_char_map():
 
 
 def create_questions(num=100, max_number=10000):
-    questions = []
-    # 10 1 digit examples
-    #for _ in range(10):
-    #    questions.append(dict(inp=np.random.randint(0, 9, 1)))
-    
-    # 50 2-10 digit examples
-    for i in range(2, 11):
-        for _ in range(50):
-            questions.append(dict(inp=np.random.randint(0, 9, i)))
+    questions = []   
+    # 50 2-20 digit examples
+    for i in range(2, 20):
+        for _ in range(10):
+            questions.append(dict(inp=[random.randint(0, 9) for _ in range(i)]))
 
     return questions
 
@@ -292,7 +287,7 @@ def run_npi(sorting_env, npi_runner, program, data):
     data['expect'] = sorted(data['inp'])
     
     sorting_env.setup_problem(data['inp'])
-
+    npi_runner.model.array_len = sorting_env.array_len
     npi_runner.reset()
     npi_runner.display_env(sorting_env, force=True)
     npi_runner.npi_program_interface(sorting_env, program, IntegerArguments())

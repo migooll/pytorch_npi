@@ -43,7 +43,7 @@ if __name__ == '__main__':
         num_data = 3
         log_filename = 'result.log'
     else:
-        output_filename = sys.argv[1] if len(sys.argv) > 1 else None
+        output_filename = sys.argv[1] if len(sys.argv) > 1 else 'data_sort.pkl'
         num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
         log_filename = sys.argv[3] if len(sys.argv) > 3 else 'result.log'
     curses.wrapper(main, output_filename, num_data, ResultLogger(log_filename))
