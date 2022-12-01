@@ -5,15 +5,14 @@ import pytorch_lightning as pl
 import numpy as np
 from torch.utils.data import WeightedRandomSampler
 
-from npi.core import NPIStep, Program, IntegerArguments, StepOutput, RuntimeSystem, PG_RETURN, StepInOut, StepInput, \
-    to_one_hot_array
-from npi.add.lib import AdditionProgramSet
+from npi.core import NPIStep, IntegerArguments, StepOutput, StepInput
+from npi.add.lib import ProgramSet
 
 class NPI(pl.LightningModule, NPIStep):
-    def __init__(self, state_dim=47, num_prog=10, max_arg_num=3, arg_depth=10, batch_size=1,
-                 hidden_size=256, program_set: AdditionProgramSet=AdditionProgramSet()) -> None:
+    def __init__(self, state_dim: int, num_prog=10, max_arg_num=3, arg_depth=10, batch_size=1,
+                 hidden_size=256, program_set: ProgramSet=ProgramSet()) -> None:
         super().__init__()
-        # Environment encoder must change depending on the task environment
+        
         # For addition task:
         self.state_dim = state_dim
         self.num_programs = num_prog
@@ -21,13 +20,15 @@ class NPI(pl.LightningModule, NPIStep):
         self.arg_depth = arg_depth
         self.batch_size = batch_size
         self.hidden_size = hidden_size
+
+        # Environment encoder must change depending on the task environment
         self.env_encoder = nn.Sequential(nn.Linear(self.state_dim, 128),
                                        nn.ReLU(),
                                        nn.Linear(128, self.hidden_size))
         self.program_set = program_set
 
-        # Using oversized nn.Embedding as Program memory, this may need to change
-        self.program_mem = nn.Embedding(num_embeddings=num_prog,
+        # Using oversized nn.Embedding as Program memory
+        self.program_mem = nn.Embedding(num_embeddings=self.num_programs,
                                         embedding_dim=self.hidden_size)
 
         self.key_mem = nn.Embedding(num_embeddings=num_prog,

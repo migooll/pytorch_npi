@@ -96,7 +96,7 @@ class SwapProgram(Program):
         env.write(row, ptr1, ptr2)
 
 
-class SortingProgramSet:
+class ProgramSet:
     NOP = Program('NOP')
     MOVE_PTR = MovePtrProgram('MOVE_PTR', 3, 2)  # PTR_KIND(2), LEFT_OR_RIGHT(2)
     SWAP = SwapProgram('SWAP', 3, 3) # Swaps PTR1 value (3 option) with PTR2 value (3 option)
@@ -132,7 +132,7 @@ class SortingProgramSet:
 
 
 class SortingTeacher(NPIStep):
-    def __init__(self, program_set: SortingProgramSet):
+    def __init__(self, program_set: ProgramSet):
         self.pg_set = program_set
         self.step_queue = None
         self.step_queue_stack = []
@@ -277,7 +277,7 @@ def create_questions(num=100, max_number=10000):
     questions = []   
     # 50 2-20 digit examples
     for i in range(2, 20):
-        for _ in range(10):
+        for _ in range(50):
             questions.append(dict(inp=[random.randint(0, 9) for _ in range(i)]))
 
     return questions

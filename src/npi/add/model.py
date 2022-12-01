@@ -17,7 +17,7 @@ from keras.regularizers import l1, l2
 from keras.utils.visualize_util import plot
 
 from npi.add.config import FIELD_ROW, FIELD_DEPTH, PROGRAM_VEC_SIZE, PROGRAM_KEY_VEC_SIZE, FIELD_WIDTH
-from npi.add.lib import AdditionProgramSet, AdditionEnv, run_npi, create_questions, AdditionTeacher, \
+from npi.add.lib import ProgramSet, AdditionEnv, run_npi, create_questions, AdditionTeacher, \
     create_random_questions
 from npi.core import NPIStep, Program, IntegerArguments, StepOutput, RuntimeSystem, PG_RETURN, StepInOut, StepInput, \
     to_one_hot_array
@@ -30,7 +30,7 @@ class AdditionNPIModel(NPIStep):
     model = None
     f_enc = None
 
-    def __init__(self, system: RuntimeSystem, model_path: str=None, program_set: AdditionProgramSet=None):
+    def __init__(self, system: RuntimeSystem, model_path: str=None, program_set: ProgramSet=None):
         self.system = system
         self.model_path = model_path
         self.program_set = program_set

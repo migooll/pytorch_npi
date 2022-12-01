@@ -6,7 +6,7 @@ import pickle
 from copy import copy
 
 from npi.add.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
-from npi.add.lib import AdditionEnv, AdditionProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
+from npi.add.lib import AdditionEnv, ProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
 from npi.core import ResultLogger
 from npi.terminal_core import TerminalNPIRunner, Terminal
 
@@ -14,7 +14,7 @@ from npi.terminal_core import TerminalNPIRunner, Terminal
 def main(stdscr, filename: str, num: int, result_logger: ResultLogger):
     terminal = Terminal(stdscr, create_char_map())
     terminal.init_window(FIELD_WIDTH, FIELD_ROW)
-    program_set = AdditionProgramSet()
+    program_set = ProgramSet()
     addition_env = AdditionEnv(FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH)
 
     questions = create_questions(num)

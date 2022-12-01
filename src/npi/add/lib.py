@@ -87,7 +87,7 @@ class WriteProgram(Program):
         env.write(row, digit+1)
 
 
-class AdditionProgramSet:
+class ProgramSet:
     NOP = Program('NOP')
     MOVE_PTR = MovePtrProgram('MOVE_PTR', 4, 2)  # PTR_KIND(4), LEFT_OR_RIGHT(2)
     WRITE = WriteProgram('WRITE', 2, 10)       # CARRY_OR_OUT(2), DIGITS(10)
@@ -119,7 +119,7 @@ class AdditionProgramSet:
 
 
 class AdditionTeacher(NPIStep):
-    def __init__(self, program_set: AdditionProgramSet):
+    def __init__(self, program_set: ProgramSet):
         self.pg_set = program_set
         self.step_queue = None
         self.step_queue_stack = []

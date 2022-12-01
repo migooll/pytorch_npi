@@ -4,7 +4,7 @@ import os
 import pickle
 
 from npi.add.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
-from npi.add.lib import AdditionEnv, AdditionProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
+from npi.add.lib import AdditionEnv, ProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
 # from npi.add.model import AdditionNPIModel
 from npi.core import ResultLogger, RuntimeSystem
 from npi.terminal_core import TerminalNPIRunner, Terminal
@@ -14,7 +14,7 @@ from pytorch_model.model import NPI
 def main(stdscr, model_path: str, num: int, result_logger: ResultLogger):
     terminal = Terminal(stdscr, create_char_map())
     terminal.init_window(FIELD_WIDTH, FIELD_ROW)
-    program_set = AdditionProgramSet()
+    program_set = ProgramSet()
     addition_env = AdditionEnv(FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH)
 
     questions = create_questions(num, max_number=10000000)
@@ -23,7 +23,7 @@ def main(stdscr, model_path: str, num: int, result_logger: ResultLogger):
     system = RuntimeSystem(terminal=terminal)
     # npi_model = AdditionNPIModel(system, model_path, program_set)
     npi_model = NPI.load_from_checkpoint(model_path)
-    npi_model.program_set = AdditionProgramSet()
+    npi_model.program_set = ProgramSet()
     npi_runner = TerminalNPIRunner(terminal, npi_model, recording=False)
     npi_runner.verbose = DEBUG_MODE
     correct_count = wrong_count = 0

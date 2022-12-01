@@ -3,7 +3,7 @@ import os
 import pickle
 
 from npi.add.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
-from npi.add.lib import AdditionEnv, AdditionProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
+from npi.add.lib import AdditionEnv, ProgramSet, AdditionTeacher, create_char_map, create_questions, run_npi
 from npi.add.model import AdditionNPIModel
 from npi.core import ResultLogger, RuntimeSystem
 from npi.terminal_core import TerminalNPIRunner, Terminal
@@ -11,7 +11,7 @@ from npi.terminal_core import TerminalNPIRunner, Terminal
 
 def main(filename: str, model_path: str):
     system = RuntimeSystem()
-    program_set = AdditionProgramSet()
+    program_set = ProgramSet()
 
     with open(filename, 'rb') as f:
         steps_list = pickle.load(f)

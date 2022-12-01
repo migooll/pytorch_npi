@@ -8,14 +8,14 @@ import os, sys
 sys.path.append(".")
 
 from npi.sort.config import FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH
-from npi.sort.lib import SortingEnv, SortingProgramSet, SortingTeacher, create_char_map, create_questions, run_npi
+from npi.sort.lib import SortingEnv, ProgramSet, SortingTeacher, create_char_map, create_questions, run_npi
 from npi.core import ResultLogger
 from npi.terminal_core import TerminalNPIRunner, Terminal
 
 def main(stdscr, filename: str, num: int, result_logger: ResultLogger):
     terminal = Terminal(stdscr, create_char_map())
     terminal.init_window(FIELD_WIDTH, FIELD_ROW)
-    program_set = SortingProgramSet()
+    program_set = ProgramSet()
     sorting_env = SortingEnv(FIELD_ROW, FIELD_WIDTH, FIELD_DEPTH)
 
     questions = create_questions(num)
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         num_data = 3
         log_filename = 'result.log'
     else:
-        output_filename = sys.argv[1] if len(sys.argv) > 1 else 'data_sort.pkl'
+        output_filename = sys.argv[1] if len(sys.argv) > 1 else 'data/train_data_sort.pkl'
         num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
         log_filename = sys.argv[3] if len(sys.argv) > 3 else 'result.log'
     curses.wrapper(main, output_filename, num_data, ResultLogger(log_filename))
