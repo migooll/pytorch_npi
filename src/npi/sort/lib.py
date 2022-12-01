@@ -275,6 +275,8 @@ def create_char_map():
 
 def create_questions(num=100, max_number=10000):
     questions = []   
+    for i in range(2, 11):
+        questions.append(dict(inp=[i for i in reversed(range(i))]))
     # 50 2-20 digit examples
     for i in range(2, 20):
         for _ in range(50):
