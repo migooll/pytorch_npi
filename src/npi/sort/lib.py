@@ -205,7 +205,6 @@ class SortingTeacher(NPIStep):
         p = self.pg_set
 
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_LEFT))) # move ptr 2 to right
-        # TODO Add len forloop
         for bstep in range(self.array_len - 1):
             ret.append((p.BSTEP, None)) 
         ret.append((p.MOVE_PTR, (p.MOVE_PTR.PTR_IN1, p.MOVE_PTR.TO_RIGHT)))

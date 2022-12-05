@@ -163,8 +163,6 @@ class TerminalNPIRunner:
             self.display_information(program, arguments, result, depth)
 
             if program.output_to_env:
-                if program.name == "SWAP":
-                    y = 1
                 program.do(env, arguments.copy())
                 self.display_env(env)
             else:

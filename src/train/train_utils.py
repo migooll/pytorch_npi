@@ -3,11 +3,12 @@ import torch
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch import nn
 import pytorch_lightning as pl
+import pdb
 
 def addition_env_data_collate_fn(batch):
     # Reed and Freitas (2016) use a batch size of 1
     assert len(batch) == 1
-    inputs = []
+    goals = []
     input_obs = []
     input_program_id = []
     input_arguments = []
@@ -17,7 +18,7 @@ def addition_env_data_collate_fn(batch):
     no_args_arr = np.zeros_like(batch[0]['steps'][0].input.arguments.decode_all())
     no_args_arr[-1] = 1. # Add 1 to last dimension of args for next_arg = None
     for datapoint in batch:
-        inputs.append(datapoint['q'])
+        goals.append(datapoint['q'])
         trace = datapoint['steps']
 
         # Append observations for whole trace "trajectory"
@@ -60,6 +61,41 @@ def addition_env_data_collate_fn(batch):
     targets = (output_program_id, output_arguments, output_termination_prob)
     return (inputs, targets)
 
+def stack_env_data_collate_fn(batch):
+    # Reed and Freitas (2016) use a batch size of 1
+    assert len(batch) == 1
+    inputs = []
+    input_obs = []
+    input_program_id = []
+    input_arguments = []
+    output_program_id = []
+    output_arguments = []
+    output_termination_prob = []
+    
+    for datapoint in batch:
+        # Append observations for whole trace "trajectory"
+        cur_data = unpack_stack_trace(datapoint)
+        
+        input_obs.append(cur_data[2])
+        input_program_id.append(cur_data[0])
+        input_arguments.append(cur_data[1])
+
+        output_program_id.append(cur_data[3])
+        output_arguments.append(cur_data[5])
+        output_termination_prob.append(cur_data[4])
+     
+    input_obs = torch.tensor(np.array(input_obs))
+    input_program_id = torch.tensor(np.array(input_program_id))
+    input_arguments = torch.tensor(np.array(input_arguments), dtype=torch.float32)
+
+    output_program_id = torch.tensor(np.array(output_program_id), dtype=torch.int64)
+    output_arguments = torch.tensor(np.array(output_arguments))
+    output_termination_prob = torch.tensor(np.array(output_termination_prob), dtype=torch.float32)
+
+    inputs = (input_obs, input_program_id, input_arguments)
+    targets = (output_program_id, output_arguments, output_termination_prob)
+    return (inputs, targets)
+
 def init_frequency_sampler(dataset) -> WeightedRandomSampler:
     """
     Initializes a torch WeightedRandomSampler with a uniform
@@ -70,4 +106,31 @@ def init_frequency_sampler(dataset) -> WeightedRandomSampler:
     sampler = WeightedRandomSampler(weights, len_data)
 
     return sampler
+
+def unpack_stack_trace(datapoint):
+    program_info = datapoint[1]
+    env_obs = np.array(datapoint[2]['object_states'])
+    in_prgs = []
+    in_args = []
+    in_obs = []
+    out_prgs = []
+    out_r = []
+    out_args = []
+    for i in range(len(program_info['in_prgs'])):
+        if program_info['in_prgs'][i][-1] == 7:
+            in_prgs.extend(program_info['in_prgs'][i])
+            in_args.extend(program_info['in_args'][i])
+            in_obs.extend(env_obs[program_info['out_boundary_begin'][i]])
+            out_prgs.extend(program_info['out_prgs'][i])
+            out_r.extend(program_info['out_stops'][i])
+            out_args.extend(program_info['out_args'][i])
+        else:
+            in_prgs.extend(program_info['in_prgs'][i][1:])
+            in_args.extend(program_info['in_args'][i][1:])
+            in_obs.extend(env_obs[program_info['out_boundary_begin'][i][1:]])
+            out_prgs.extend(program_info['out_prgs'][i][1:])
+            out_r.extend(program_info['out_stops'][i][1:])
+            out_args.extend(program_info['out_args'][i][1:])
+
+    return in_prgs, in_args, in_obs, out_prgs, out_r, out_args
 

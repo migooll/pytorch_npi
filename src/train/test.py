@@ -5,32 +5,30 @@ sys.path.append(".")
 import pickle
 from copy import copy
 
-from npi.core import ResultLogger, RuntimeSystem
+from npi.core import ResultLogger, RuntimeSystem, MAX_ARG_NUM, ARG_DEPTH
+from npi.task import Task
 from npi.terminal_core import TerminalNPIRunner, Terminal
-
-from npi.core import MAX_ARG_NUM, ARG_DEPTH
 from pytorch_model.model import NPI
-import train
+
 
 def main(stdscr, model_path: str, num: int, result_logger: ResultLogger, task: str="sort"):
-    config, lib, Env, program = train.init_task(task)
-    terminal = Terminal(stdscr, lib.create_char_map())
-    terminal.init_window(config.FIELD_WIDTH, config.FIELD_ROW)
+    npi_task = Task.init_task(task)
+    terminal = Terminal(stdscr, npi_task.lib.create_char_map())
+    terminal.init_window(npi_task.config.FIELD_WIDTH, npi_task.config.FIELD_ROW)
     # program_set = lib.ProgramSet()
-    env = Env(config.FIELD_ROW, config.FIELD_WIDTH, config.FIELD_DEPTH)
+    env = npi_task.env(npi_task.config.FIELD_ROW, npi_task.config.FIELD_WIDTH, npi_task.config.FIELD_DEPTH)
 
-    questions = lib.create_questions(num, max_number=10000000)
+    questions = npi_task.lib.create_questions(num, max_number=10000000)
     if DEBUG_MODE:
         questions = questions[-num:]
     system = RuntimeSystem(terminal=terminal)
-    # npi_model = AdditionNPIModel(system, model_path, program_set)
-    state_dim = MAX_ARG_NUM + config.FIELD_ROW * config.FIELD_DEPTH
-    npi_model = NPI.load_from_checkpoint(model_path, state_dim=state_dim,
-                                         num_prog=config.MAX_PROGRAM_NUM,
+    state_dim = MAX_ARG_NUM + npi_task.config.FIELD_ROW * npi_task.config.FIELD_DEPTH
+    npi_model = NPI.load_from_checkpoint(model_path,
+                                         state_dim=state_dim,
+                                         num_prog=npi_task.config.MAX_PROGRAM_NUM,
                                          max_arg_num=MAX_ARG_NUM,
                                          arg_depth=ARG_DEPTH,
-                                         program_set=lib.ProgramSet())
-    # npi_model.program_set = ProgramSet()
+                                         program_set=npi_task.lib.ProgramSet())
     npi_runner = TerminalNPIRunner(terminal, npi_model, recording=True)
     npi_runner.verbose = DEBUG_MODE
     correct_count = wrong_count = 0
@@ -39,7 +37,7 @@ def main(stdscr, model_path: str, num: int, result_logger: ResultLogger, task: s
         env.reset()
         q = copy(data)
         try:
-            lib.run_npi(env, npi_runner, program, data)
+            npi_task.lib.run_npi(env, npi_runner, npi_task.root_program, data)
         # steps_list.append({"q": q, "steps": npi_runner.step_list})
             result_logger.write(data)
             terminal.add_log(data)
