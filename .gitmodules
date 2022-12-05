@@ -1,0 +1,3 @@
+[submodule "src/NTP-vat-release"]
+	path = src/NTP-vat-release
+	url = https://github.com/spok7/NTP-vat-release.git
