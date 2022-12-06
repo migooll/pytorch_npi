@@ -1,5 +1,7 @@
 import importlib
 import train_utils
+import sys
+sys.path.append(".")
 from npi.core import MAX_ARG_NUM, ARG_DEPTH
 
 class Task: 
@@ -35,7 +37,7 @@ class Task:
             self.lib = importlib.import_module(".lib", f"npi.{self.task}.vat.envs")
 
     def _init_env(self):
-        if self.task == "addition":
+        if self.task == "add":
             self.env = self.lib.AdditionEnv
             self.root_program = self.lib.ProgramSet().ADD
         elif self.task == "sort":
