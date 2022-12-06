@@ -5,30 +5,22 @@ sys.path.append(".")
 import pickle
 from copy import copy
 
+from task import Task
+from npi.pick_place import demo
 from npi.core import ResultLogger, RuntimeSystem, MAX_ARG_NUM, ARG_DEPTH
-from npi.task import Task
 from npi.terminal_core import TerminalNPIRunner, Terminal
 from pytorch_model.model import NPI
 
 
-def main(stdscr, model_path: str, num: int, result_logger: ResultLogger, task: str="sort"):
-    npi_task = Task.init_task(task)
+def test_standard(stdscr, npi_model: NPI, npi_task, num: int, result_logger: ResultLogger):
     terminal = Terminal(stdscr, npi_task.lib.create_char_map())
     terminal.init_window(npi_task.config.FIELD_WIDTH, npi_task.config.FIELD_ROW)
-    # program_set = lib.ProgramSet()
     env = npi_task.env(npi_task.config.FIELD_ROW, npi_task.config.FIELD_WIDTH, npi_task.config.FIELD_DEPTH)
 
     questions = npi_task.lib.create_questions(num, max_number=10000000)
     if DEBUG_MODE:
         questions = questions[-num:]
     system = RuntimeSystem(terminal=terminal)
-    state_dim = MAX_ARG_NUM + npi_task.config.FIELD_ROW * npi_task.config.FIELD_DEPTH
-    npi_model = NPI.load_from_checkpoint(model_path,
-                                         state_dim=state_dim,
-                                         num_prog=npi_task.config.MAX_PROGRAM_NUM,
-                                         max_arg_num=MAX_ARG_NUM,
-                                         arg_depth=ARG_DEPTH,
-                                         program_set=npi_task.lib.ProgramSet())
     npi_runner = TerminalNPIRunner(terminal, npi_model, recording=True)
     npi_runner.verbose = DEBUG_MODE
     correct_count = wrong_count = 0
@@ -57,9 +49,21 @@ def main(stdscr, model_path: str, num: int, result_logger: ResultLogger, task: s
 if __name__ == '__main__':
     import sys
     DEBUG_MODE = os.environ.get('DEBUG')
+
+    task = "pick_place"
+    npi_task = Task.init_task(task)
+
     # model_path_ = sys.argv[1]
-    model_path_ = "./lightning_logs/version_8/checkpoints/epoch=6-step=6300.ckpt"
+    model_path = "./lightning_logs/version_12/checkpoints/epoch=9-step=10000.ckpt"
+    npi_model = NPI.load_model(model_path, npi_task)
+
     num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 100
     log_filename = sys.argv[3] if len(sys.argv) > 3 else 'sort_result.log'
-    cc, wc = curses.wrapper(main, model_path_, num_data, ResultLogger(log_filename))
-    print("Accuracy %s(OK=%d, NG=%d)" % (cc/(cc+wc), cc, wc))
+
+    if task in ['sort', 'add']:
+        cc, wc = curses.wrapper(test_standard, npi_model, num_data, ResultLogger(log_filename))
+        print("Accuracy %s(OK=%d, NG=%d)" % (cc/(cc+wc), cc, wc))
+    else:
+        cc, wc = demo.main(npi_model, npi_task)
+        print("Accuracy %s(OK=%d, NG=%d)" % (cc/(cc+wc), cc, wc))
+        

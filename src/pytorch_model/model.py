@@ -1,8 +1,8 @@
 import torch
-from torch import nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 import numpy as np
+from torch import nn
 from torch.utils.data import WeightedRandomSampler
 
 from npi.core import NPIStep, IntegerArguments, StepOutput, StepInput
@@ -10,16 +10,18 @@ from npi.add.lib import ProgramSet
 
 class NPI(pl.LightningModule, NPIStep):
     def __init__(self, state_dim: int, num_prog=10, max_arg_num=3, arg_depth=10, batch_size=1,
-                 hidden_size=256, program_set: ProgramSet=ProgramSet()) -> None:
+                 hidden_size=256, program_set: ProgramSet=ProgramSet(), task="sort") -> None:
         super().__init__()
         
-        # For addition task:
+        self.task = task
         self.state_dim = state_dim
         self.num_programs = num_prog
         self.max_arg_num = max_arg_num
         self.arg_depth = arg_depth
         self.batch_size = batch_size
         self.hidden_size = hidden_size
+        self.arg_loss = self.CEloss if self.max_arg_num * self.arg_depth > 1 \
+                        else self.BCEloss
 
         # Environment encoder must change depending on the task environment
         self.env_encoder = nn.Sequential(nn.Linear(self.state_dim, 128),
@@ -53,13 +55,45 @@ class NPI(pl.LightningModule, NPIStep):
                                     nn.ReLU(),
                                     nn.Linear(128, self.arg_depth * self.max_arg_num))
 
-        self.CEloss = nn.CrossEntropyLoss()
-        self.BCEloss = nn.BCEWithLogitsLoss()
-
         self.register_buffer("keys", torch.arange(num_prog, dtype=torch.int32))
         self.testing = False
         self.val_step_losses = []
         self.reset()
+
+    @classmethod
+    def init_model(cls, npi_task: "Task", batch_size=1, hidden_size=256):
+        model = cls(state_dim=npi_task.state_dim, 
+                    num_prog=npi_task.config.MAX_PROGRAM_NUM,
+                    max_arg_num=npi_task.max_arg_num,
+                    arg_depth=npi_task.arg_depth,
+                    batch_size=batch_size,
+                    hidden_size=hidden_size, 
+                    program_set=npi_task.lib.ProgramSet(),
+                    task=npi_task.task)
+        return model
+    
+    @classmethod
+    def load_model(cls, model_path, npi_task: "Task", batch_size=1, hidden_size=256):
+        model = cls.load_from_checkpoint(model_path,
+                                         state_dim=npi_task.state_dim, 
+                                         num_prog=npi_task.config.MAX_PROGRAM_NUM,
+                                         max_arg_num=npi_task.max_arg_num,
+                                         arg_depth=npi_task.arg_depth,
+                                         batch_size=batch_size,
+                                         hidden_size=hidden_size, 
+                                         program_set=npi_task.lib.ProgramSet(),
+                                         task=npi_task.task)
+        return model
+
+    @staticmethod
+    def CEloss(input, target):
+        loss = nn.CrossEntropyLoss()
+        return loss(input, target)
+
+    @staticmethod
+    def BCEloss(input, target):
+        loss = nn.BCEWithLogitsLoss()
+        return loss(input.squeeze(), target.squeeze())
 
     def encode_environment(self, observations, program_arguments):
         return self.env_encoder(torch.cat((observations, program_arguments), dim=-1))
@@ -115,7 +149,7 @@ class NPI(pl.LightningModule, NPIStep):
 
         # Maximize log probability of output trace (Equation (7)). Currently implemented as CE.
         program_ids_loss = self.CEloss(program_ids_t1, program_ids_t1_target)
-        args_loss = self.CEloss(args_t1, args_t1_target)
+        args_loss = self.arg_loss(args_t1, args_t1_target)
         end_prob_loss = self.BCEloss(r_t.squeeze(dim=-1), r_t_target)
 
         loss = program_ids_loss + args_loss + end_prob_loss
@@ -146,10 +180,17 @@ class NPI(pl.LightningModule, NPIStep):
         else:
             program = None
 
-        args = args_t1[0,:,0,:].argmax(dim=0).tolist()
-        if args == [0, 0, 1]:
-            args = None
-        ret = StepOutput(r, program, IntegerArguments(args=args_t1[0,:,0,:].argmax(dim=0).tolist()))
+        if len(args_t1.squeeze().shape) == 0:
+            values = np.array(nn.Sigmoid()(args_t1).squeeze().item())
+            arguments = IntegerArguments(values=values)
+        else:
+            args = args_t1[0,:,0,:].argmax(dim=0).tolist()
+            # No args definition for add and sort:
+            #if args == [0, 0, 1]:
+            #    args = None
+            arguments = IntegerArguments(args=args)
+
+        ret = StepOutput(r, program, arguments)
         self.testing = False
         return ret
 

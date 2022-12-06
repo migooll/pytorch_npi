@@ -1,0 +1,1231 @@
+{
+    "name": "pick_place",
+    "scene": {
+        "objects": [
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_0.urdf",
+                "fixed": false,
+                "name": "cube_0",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_1.urdf",
+                "fixed": false,
+                "name": "cube_1",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_2.urdf",
+                "fixed": false,
+                "name": "cube_2",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_3.urdf",
+                "fixed": false,
+                "name": "cube_3",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_4.urdf",
+                "fixed": false,
+                "name": "cube_4",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_5.urdf",
+                "fixed": false,
+                "name": "cube_5",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_6.urdf",
+                "fixed": false,
+                "name": "cube_6",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            },
+            {
+                "boundary": [
+                    0.08,
+                    0.08,
+                    0.08
+                ],
+                "filename": "cubes/cube_7.urdf",
+                "fixed": false,
+                "name": "cube_7",
+                "pose": {
+                    "rpy": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "type": "random",
+                    "z": 0.7
+                },
+                "scale": [
+                    0.05,
+                    0.05,
+                    0.05
+                ]
+            }
+        ],
+        "task_objects": [
+            "cube_0",
+            "cube_1",
+            "cube_2",
+            "cube_3",
+            "cube_4",
+            "cube_5",
+            "cube_6",
+            "cube_7"
+        ],
+        "workspace": {
+            "pos_eps": 0.03,
+            "size": 0.1,
+            "xlim": [
+                -0.2,
+                0.2
+            ],
+            "ylim": [
+                -0.2,
+                0.2
+            ]
+        }
+    },
+    "tasks": [
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_0",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_1",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_2",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_3",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_4",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_5",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_0",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_0",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_6",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_7",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_8",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_9",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_10",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_11",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_12",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_1",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_1",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_13",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_14",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_15",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_16",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_17",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_18",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_19",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_2",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_2",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_20",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_21",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_22",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_23",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_24",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_25",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_26",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_3",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_3",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_27",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_28",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_29",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_30",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_31",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_32",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_33",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_4",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_4",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_34",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_35",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_36",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_37",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_38",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_39",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_40",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_5",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_5",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_41",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_42",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_43",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_44",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_45",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_46",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_47",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_6",
+                    "target": "cube_7",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_6",
+                    "target": "cube_7"
+                }
+            ],
+            "id": "pick_place_48",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_0",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_0"
+                }
+            ],
+            "id": "pick_place_49",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_1",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_1"
+                }
+            ],
+            "id": "pick_place_50",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_2",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_2"
+                }
+            ],
+            "id": "pick_place_51",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_3",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_3"
+                }
+            ],
+            "id": "pick_place_52",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_4",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_4"
+                }
+            ],
+            "id": "pick_place_53",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_5",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_5"
+                }
+            ],
+            "id": "pick_place_54",
+            "name": "pick_place"
+        },
+        {
+            "end_constraints": [
+                {
+                    "src": "cube_7",
+                    "target": "cube_6",
+                    "type": "on_top"
+                }
+            ],
+            "goals": [
+                {
+                    "name": "pick_place",
+                    "src": "cube_7",
+                    "target": "cube_6"
+                }
+            ],
+            "id": "pick_place_55",
+            "name": "pick_place"
+        }
+    ]
+}

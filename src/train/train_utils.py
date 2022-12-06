@@ -1,9 +1,11 @@
+import pickle
+from pathlib import Path
+
 import numpy as np
 import torch
+import pytorch_lightning as pl
 from torch.utils.data import DataLoader, WeightedRandomSampler
 from torch import nn
-import pytorch_lightning as pl
-import pdb
 
 def addition_env_data_collate_fn(batch):
     # Reed and Freitas (2016) use a batch size of 1
@@ -89,7 +91,7 @@ def stack_env_data_collate_fn(batch):
     input_arguments = torch.tensor(np.array(input_arguments), dtype=torch.float32)
 
     output_program_id = torch.tensor(np.array(output_program_id), dtype=torch.int64)
-    output_arguments = torch.tensor(np.array(output_arguments))
+    output_arguments = torch.tensor(np.array(output_arguments), dtype=torch.long)
     output_termination_prob = torch.tensor(np.array(output_termination_prob), dtype=torch.float32)
 
     inputs = (input_obs, input_program_id, input_arguments)
@@ -120,17 +122,35 @@ def unpack_stack_trace(datapoint):
         if program_info['in_prgs'][i][-1] == 7:
             in_prgs.extend(program_info['in_prgs'][i])
             in_args.extend(program_info['in_args'][i])
-            in_obs.extend(env_obs[program_info['out_boundary_begin'][i]])
+            #if i == 0:
+            #    obs = env_obs[program_info['out_boundary_begin'][i]]
+            #    obs[0] += env_obs[-1]
+            #else:
+            obs = env_obs[program_info['out_boundary_begin'][i]]
+            in_obs.extend(obs)
             out_prgs.extend(program_info['out_prgs'][i])
             out_r.extend(program_info['out_stops'][i])
-            out_args.extend(program_info['out_args'][i])
+            for out_arg in program_info['out_args'][i]:
+                out_args.append([out_arg])
         else:
             in_prgs.extend(program_info['in_prgs'][i][1:])
             in_args.extend(program_info['in_args'][i][1:])
             in_obs.extend(env_obs[program_info['out_boundary_begin'][i][1:]])
             out_prgs.extend(program_info['out_prgs'][i][1:])
             out_r.extend(program_info['out_stops'][i][1:])
-            out_args.extend(program_info['out_args'][i][1:])
+            for out_arg in program_info['out_args'][i][1:]:
+                out_args.append([out_arg])
 
     return in_prgs, in_args, in_obs, out_prgs, out_r, out_args
+
+def load_data(data_dir):
+    data_path = Path(data_dir)
+    file_type = data_dir.split(".")[-1]
+    if file_type == "npy":
+        dataset = np.load(data_path, allow_pickle=True)
+        return dataset
+    elif file_type == "pkl":
+        with data_path.open('rb') as dp:
+            dataset = pickle.load(dp)
+        return dataset
 
