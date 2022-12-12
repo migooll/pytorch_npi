@@ -14,8 +14,8 @@ PG_RETURN = 1
 
 class IntegerArguments:
     # TODO make this change according to task, OR make arguments for all tasks have same depth/maxnum
-    depth = ARG_DEPTH
-    max_arg_num = MAX_ARG_NUM
+    depth = 1
+    max_arg_num = 1
     size_of_arguments = depth * max_arg_num
 
     def __init__(self, args: list=None, values: np.ndarray=None):

@@ -48,20 +48,20 @@ def test_standard(stdscr, npi_model: NPI, npi_task, num: int, result_logger: Res
 
 if __name__ == '__main__':
     import sys
-    DEBUG_MODE = 0
+    DEBUG_MODE = os.environ.get('DEBUG')
 
-    task = "sort"
-    npi_task = Task.init_task(task, sequential=False)
+    task = "pick_place"
+    npi_task = Task.init_task(task)
 
     # model_path_ = sys.argv[1]
-    model_path = "./lightning_logs/version_5/checkpoints/epoch=0-step=909.ckpt"
+    model_path = "./lightning_logs/version_12/checkpoints/epoch=9-step=10000.ckpt"
     npi_model = NPI.load_model(model_path, npi_task)
 
     num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
     log_filename = sys.argv[3] if len(sys.argv) > 3 else 'sort_result.log'
 
     if task in ['sort', 'add']:
-        cc, wc = curses.wrapper(test_standard, npi_model, npi_task, num_data, ResultLogger(log_filename))
+        cc, wc = curses.wrapper(test_standard, npi_model, num_data, ResultLogger(log_filename))
         print("Accuracy %s(OK=%d, NG=%d)" % (cc/(cc+wc), cc, wc))
     else:
         #cc, wc = demo.main(npi_model, npi_task)

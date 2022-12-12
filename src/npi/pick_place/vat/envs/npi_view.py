@@ -245,15 +245,6 @@ class NPIView:
 
         return self.all_trace, serial_depth_trace, self.state_log
 
-    def specify_npi_task_in_obs(self, obs):
-        nstep = self.world.stats['n_step']
-        curr_task = self.world.task[nstep]
-        source_block = self.world.name_to_ind(curr_task['src'])
-        target_block = self.world.name_to_ind(curr_task['target'])
-        obs[source_block, -1] += 100
-        obs[target_block, -1] -= 100
-        return obs
-
     def call_model_helper(self, program, args, depth=0):
         """Call trained model """
         assert self.model is not None 
@@ -266,18 +257,16 @@ class NPIView:
         r = 0
         while r < 0.5:
             print(program.name)
-            print(args.decode_all()[0])
+            print(args.values[0, 0])
             self.steps += 1
             if 1000 < self.steps:
                 raise StopIteration()
             obs = self.world.object_state
-            if self.steps == 1:
-                obs = self.specify_npi_task_in_obs(obs)
             step_output = self.model.step(env_obs=obs, program=program, args=args)
             r = step_output.r
 
             if program.name in self.ACT:
-                self.programs[program.program_id][1](round(args.decode_all()[0]), full_demo=self.full_demo)
+                self.programs[program.program_id][1](round(args.values[0, 0]), full_demo=self.full_demo)
             else:
                 if step_output.program:
                     self.call_model_helper(step_output.program,
@@ -311,10 +300,6 @@ class NPIView:
 
         # call root program
         self.call_model_helper(program, IntegerArguments([args]))
-
-        self.model.reset()
-        self.steps = 0
-
         if not self.success:
             print('demo failed')
             return None

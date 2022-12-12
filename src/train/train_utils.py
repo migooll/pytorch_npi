@@ -112,8 +112,6 @@ def init_frequency_sampler(dataset) -> WeightedRandomSampler:
 def unpack_stack_trace(datapoint):
     program_info = datapoint[1]
     env_obs = np.array(datapoint[2]['object_states'])
-    source_block = program_info['in_args'][0][-1]
-    target_block = program_info['in_args'][2][-1]
     in_prgs = []
     in_args = []
     in_obs = []
@@ -124,12 +122,11 @@ def unpack_stack_trace(datapoint):
         if program_info['in_prgs'][i][-1] == 7:
             in_prgs.extend(program_info['in_prgs'][i])
             in_args.extend(program_info['in_args'][i])
-            if i == 0:
-                obs = env_obs[program_info['out_boundary_begin'][i]]
-                obs[0, source_block, -1] += 100
-                obs[0, target_block, -1] -= 100
-            else:
-                obs = env_obs[program_info['out_boundary_begin'][i]]
+            #if i == 0:
+            #    obs = env_obs[program_info['out_boundary_begin'][i]]
+            #    obs[0] += env_obs[-1]
+            #else:
+            obs = env_obs[program_info['out_boundary_begin'][i]]
             in_obs.extend(obs)
             out_prgs.extend(program_info['out_prgs'][i])
             out_r.extend(program_info['out_stops'][i])

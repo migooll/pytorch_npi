@@ -277,8 +277,8 @@ def create_questions(num=100, max_number=10000):
     for i in range(2, 11):
         questions.append(dict(inp=[i for i in reversed(range(i))]))
     # 50 2-20 digit examples
-    for i in range(2, 11):
-        for _ in range(100):
+    for i in range(2, 20):
+        for _ in range(50):
             questions.append(dict(inp=[random.randint(0, 9) for _ in range(i)]))
 
     return questions

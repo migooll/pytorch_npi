@@ -17,7 +17,7 @@ def parse_args():
 
     parser.add_argument('--time_step', dest='time_step',
                         help='Time step for the simulation.',
-                        default=0.002, type=float)
+                        default=0.001, type=float)
 
     parser.add_argument('--display', dest='display',
                         help='If render the simulation. [1]/[0] for yes/no.',
@@ -100,7 +100,7 @@ def main(npi_model=None, npi_task=None):
     traces = []
     correct_count = 0
     wrong_count = 0
-    for i, task in enumerate(task_config['tasks']):
+    for i, task in enumerate([task_config['tasks'][0]]):
         bw.set_task(task)
         bw.start_task()
         done = False
@@ -118,7 +118,6 @@ def main(npi_model=None, npi_task=None):
                 assert(bw.task_done)
             else:
                 wrong_count += 1
-
             bw.reset_world()
             bw.start_task()
             print((task['id']))

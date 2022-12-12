@@ -22,13 +22,12 @@ class NPI(pl.LightningModule, NPIStep):
         self.hidden_size = hidden_size
         self.arg_loss = self.CEloss if self.max_arg_num * self.arg_depth > 1 \
                         else self.BCEloss
-        self.program_set = program_set
 
         # Environment encoder must change depending on the task environment
         self.env_encoder = nn.Sequential(nn.Linear(self.state_dim, 128),
                                        nn.ReLU(),
                                        nn.Linear(128, self.hidden_size))
-        
+        self.program_set = program_set
 
         # Using oversized nn.Embedding as Program memory
         self.program_mem = nn.Embedding(num_embeddings=self.num_programs,
@@ -193,15 +192,15 @@ class NPI(pl.LightningModule, NPIStep):
         else:
             program = None
 
-        #if len(args_t1.squeeze().shape) == 0:
-        #    values = np.array(nn.Sigmoid()(args_t1).squeeze().item())
-        #    arguments = IntegerArguments(values=values)
-        #else:
-        args = args_t1[0,:,0,:].argmax(dim=0).tolist()
+        if len(args_t1.squeeze().shape) == 0:
+            values = np.array(nn.Sigmoid()(args_t1).squeeze().item())
+            arguments = IntegerArguments(values=values)
+        else:
+            args = args_t1[0,:,0,:].argmax(dim=0).tolist()
             # No args definition for add and sort:
             #if args == [0, 0, 1]:
             #    args = None
-        arguments = IntegerArguments(args=args)
+            arguments = IntegerArguments(args=args)
 
         ret = StepOutput(r, program, arguments)
         self.testing = False

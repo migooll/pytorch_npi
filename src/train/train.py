@@ -15,7 +15,7 @@ from train_utils import init_frequency_sampler, load_data
 def train(data_dir="data/train_data_sort.pkl", task="sort", sequential=False, freq_resample=False):
     npi_task = Task.init_task(task, sequential)
     dataset = load_data(data_dir)
-    # dataset = list(dataset[0:40]) * 20
+    dataset = list(dataset) * 20
     # dataset = dataset[0:2]
     if freq_resample:
         val_loader = DataLoader(dataset, collate_fn=npi_task.collate_fn, num_workers=4, batch_size=1)
@@ -26,10 +26,9 @@ def train(data_dir="data/train_data_sort.pkl", task="sort", sequential=False, fr
     train_loader = DataLoader(dataset, collate_fn=npi_task.collate_fn,
                               num_workers=4, batch_size=1, sampler=weighted_sampler)
     model = NPI.init_model(npi_task)
-    trainer = pl.Trainer(max_epochs=30, accelerator='gpu')
+    trainer = pl.Trainer(max_epochs=10, accelerator='gpu')
     trainer.fit(model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
 if __name__ == '__main__':
-    #train(data_dir="data/train_data_pick_place.npy", task="pick_place")
-    train(data_dir="./train_data_sort_short.pkl", task="sort", freq_resample=False)
+    train(data_dir="data/train_data_pick_place.npy", task="pick_place")
     # os.system('shutdown -s')
