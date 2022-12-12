@@ -12,8 +12,8 @@ from task import Task
 from pytorch_model.model import NPI
 from train_utils import init_frequency_sampler, load_data
 
-def train(data_dir="data/train_data_sort.pkl", task="sort", freq_resample=False):
-    npi_task = Task.init_task(task)
+def train(data_dir="data/train_data_sort.pkl", task="sort", sequential=False, freq_resample=False):
+    npi_task = Task.init_task(task, sequential)
     dataset = load_data(data_dir)
     # dataset = list(dataset[0:40]) * 20
     # dataset = dataset[0:2]
@@ -31,5 +31,5 @@ def train(data_dir="data/train_data_sort.pkl", task="sort", freq_resample=False)
 
 if __name__ == '__main__':
     #train(data_dir="data/train_data_pick_place.npy", task="pick_place")
-    train(data_dir="data/train_data_sort_short.pkl")
+    train(data_dir="./train_data_sort_short.pkl", task="sort", freq_resample=False)
     # os.system('shutdown -s')

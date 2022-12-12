@@ -26,7 +26,7 @@ def main(stdscr, filename: str, num: int, result_logger: ResultLogger):
         addition_env.reset()
         q = copy(data)
         run_npi(addition_env, npi_runner, program_set.ADD, data)
-        steps_list.append({"q": q, "steps": npi_runner.step_list})
+        steps_list.append({"q": q, "steps": npi_runner.step_list, "trace": npi_runner.thread_list})
         result_logger.write(data)
         terminal.add_log(data)
 
@@ -42,8 +42,8 @@ if __name__ == '__main__':
         num_data = 3
         log_filename = 'result.log'
     else:
-        output_filename = sys.argv[1] if len(sys.argv) > 1 else None
-        num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 10000
+        output_filename = sys.argv[1] if len(sys.argv) > 1 else "add_data.pkl"
+        num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
         log_filename = sys.argv[3] if len(sys.argv) > 3 else 'result.log'
     curses.wrapper(main, output_filename, num_data, ResultLogger(log_filename))
     print("create %d training data" % num_data)

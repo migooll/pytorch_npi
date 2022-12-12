@@ -277,8 +277,8 @@ def create_questions(num=100, max_number=10000):
     for i in range(2, 11):
         questions.append(dict(inp=[i for i in reversed(range(i))]))
     # 50 2-20 digit examples
-    for i in range(15, 16):
-        for _ in range(50):
+    for i in range(2, 11):
+        for _ in range(100):
             questions.append(dict(inp=[random.randint(0, 9) for _ in range(i)]))
 
     return questions
@@ -291,7 +291,10 @@ def run_npi(sorting_env, npi_runner, program, data):
     npi_runner.model.array_len = sorting_env.array_len
     npi_runner.reset()
     npi_runner.display_env(sorting_env, force=True)
-    npi_runner.npi_program_interface(sorting_env, program, IntegerArguments())
+    if isinstance(npi_runner.model, SortingTeacher):
+        npi_runner.npi_program_interface(sorting_env, program, IntegerArguments())
+    else:
+        npi_runner.npi_program_interface_test(sorting_env, program, IntegerArguments())
 
     data['result'] = sorting_env.get_output()
     data['correct'] = data['result'] == data['expect']

@@ -5,13 +5,14 @@ sys.path.append(".")
 from npi.core import MAX_ARG_NUM, ARG_DEPTH
 
 class Task: 
-    def __init__(self, task="sort"):
+    def __init__(self, task="sort", sequential=False):
         self.task = task
         self.config = None
         self.lib = None
         self.env = None
         self.root_program = None
         self.collate_fn = None
+        self.sequential = sequential
 
         self._init_config()
         self._init_lib()
@@ -23,8 +24,8 @@ class Task:
         self.state_dim = self.max_arg_num + self.config.FIELD_ROW * self.config.FIELD_DEPTH
 
     @classmethod
-    def init_task(cls, task):
-        npi_task = cls(task)
+    def init_task(cls, task, sequential):
+        npi_task = cls(task, sequential)
         return npi_task
     
     def _init_config(self):
@@ -49,6 +50,9 @@ class Task:
 
     def _init_collate_fn(self):
         if self.task != "pick_place":
-            self.collate_fn = train_utils.addition_env_data_collate_fn
+            if self.sequential:
+                self.collate_fn = train_utils.addition_env_sequential_collate_fn
+            else:
+                self.collate_fn = train_utils.addition_env_hierarchical_collate_fn
         else:
-            self.collate_fn = train_utils.stack_env_data_collate_fn
+            self.collate_fn = train_utils.stack_env_sequential_collate_fn

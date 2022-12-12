@@ -27,7 +27,7 @@ def main(stdscr, filename: str, num: int, result_logger: ResultLogger):
         sorting_env.reset()
         q = copy(data)
         run_npi(sorting_env, npi_runner, program_set.BUBBLE_SORT, data)
-        steps_list.append({"q": q, "steps": npi_runner.step_list})
+        steps_list.append({"q": q, "steps": npi_runner.step_list, "trace": npi_runner.thread_list})
         result_logger.write(data)
         terminal.add_log(data)
 
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         num_data = 3
         log_filename = 'result.log'
     else:
-        output_filename = sys.argv[1] if len(sys.argv) > 1 else 'data/train_data_sort_short.pkl'
+        output_filename = sys.argv[1] if len(sys.argv) > 1 else 'train_data_sort_short.pkl'
         num_data = int(sys.argv[2]) if len(sys.argv) > 2 else 1000
         log_filename = sys.argv[3] if len(sys.argv) > 3 else 'result.log'
     curses.wrapper(main, output_filename, num_data, ResultLogger(log_filename))

@@ -117,6 +117,7 @@ class TerminalNPIRunner:
         self.model = model
         self.steps = 0
         self.step_list = []
+        self.thread_list = []
         self.alpha = 0.5
         self.verbose = True
         self.recording = recording
@@ -126,6 +127,7 @@ class TerminalNPIRunner:
     def reset(self):
         self.steps = 0
         self.step_list = []
+        self.thread_list = []
         self.model.reset()
 
     def display_env(self, env, force=False):
@@ -149,17 +151,18 @@ class TerminalNPIRunner:
             raise StopIteration()
 
         self.model.enter_function()
-
+        cur_thread = []
         result = StepOutput(0, None, None)
         while result.r < self.alpha:
             self.steps += 1
             if self.max_step < self.steps:
                 raise StopIteration()
-            
+
             env_observation = env.get_observation()
             result = self.model.step(env_observation, program, arguments.copy())
             if self.recording:
                 self.step_list.append(StepInOut(StepInput(env_observation, program, arguments.copy()), result))
+                cur_thread.append(StepInOut(StepInput(env_observation, program, arguments.copy()), result))
             self.display_information(program, arguments, result, depth)
 
             if program.output_to_env:
@@ -168,7 +171,39 @@ class TerminalNPIRunner:
             else:
                 if result.program:  # modify original algorithm
                     self.npi_program_interface(env, result.program, result.arguments, depth=depth+1)
+        
+        self.thread_list.append(cur_thread)
+        self.model.exit_function()
 
+    def npi_program_interface_test(self, env, program: Program, arguments: IntegerArguments, depth=0):
+        if self.max_depth < depth or self.max_step < self.steps:
+            raise StopIteration()
+
+        self.model.enter_function()
+        cur_thread = []
+        result = StepOutput(0, None, None)
+        ht = ct = None
+        while result.r < self.alpha:
+            self.steps += 1
+            if self.max_step < self.steps:
+                raise StopIteration()
+            
+            env_observation = env.get_observation()
+            result, ht, ct = self.model.step(env_observation, program, arguments.copy(), ht, ct)
+            if self.recording:
+                self.step_list.append(StepInOut(StepInput(env_observation, program, arguments.copy()), result))
+                cur_thread.append(StepInOut(StepInput(env_observation, program, arguments.copy()), result))
+            self.display_information(program, arguments, result, depth)
+            
+            if result.program: 
+                if result.program.output_to_env:
+                    result.program.do(env, result.arguments.copy())
+                    self.display_env(env)
+                else:
+                    # modify original algorithm
+                    self.npi_program_interface_test(env, result.program, result.arguments, depth=depth+1)
+
+        self.thread_list.append(cur_thread)
         self.model.exit_function()
 
     def wait(self):

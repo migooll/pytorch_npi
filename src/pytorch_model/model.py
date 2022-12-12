@@ -9,7 +9,7 @@ from npi.core import NPIStep, IntegerArguments, StepOutput, StepInput
 from npi.add.lib import ProgramSet
 
 class NPI(pl.LightningModule, NPIStep):
-    def __init__(self, state_dim: int, num_prog=10, max_arg_num=3, arg_depth=10, batch_size=1,
+    def __init__(self, state_dim: int, num_prog=15, max_arg_num=3, arg_depth=10, batch_size=1,
                  hidden_size=256, program_set: ProgramSet=ProgramSet(), task="sort") -> None:
         super().__init__()
         
@@ -32,7 +32,8 @@ class NPI(pl.LightningModule, NPIStep):
 
         # Using oversized nn.Embedding as Program memory
         self.program_mem = nn.Embedding(num_embeddings=self.num_programs,
-                                        embedding_dim=self.hidden_size)
+                                        embedding_dim=self.hidden_size,
+                                        padding_idx=14)
 
         self.key_mem = nn.Embedding(num_embeddings=num_prog,
                                     embedding_dim=64)
@@ -105,7 +106,7 @@ class NPI(pl.LightningModule, NPIStep):
         """
         return self.env_prog_fuser(torch.cat((state_emb, program_emb), dim=-1))
 
-    def predict(self, env_obs, pg_ids, args):
+    def predict(self, env_obs, pg_ids, args, h_t = None, c_t = None):
         # Equation (1)
         s_t = self.encode_environment(env_obs, args) 
 
@@ -117,7 +118,8 @@ class NPI(pl.LightningModule, NPIStep):
         if not self.testing:
             h_t, _ = self.core(s_t_p_t)
         else:
-            h_t, (self.ht, self.ct) = self.core(s_t_p_t, (self.ht, self.ct))
+            assert h_t is not None and c_t is not None
+            h_t, (self.ht, self.ct) = self.core(s_t_p_t, (h_t, c_t))
 
         # Equation (3)
         r_t = self.end_decoder(h_t)
@@ -139,7 +141,8 @@ class NPI(pl.LightningModule, NPIStep):
     def training_step(self, data):
         # Input Traces
         obs_t0, program_ids_t0, args_t0 = data[0]
-        self.seq_len = obs_t0.shape[1]
+        self.batch_size = program_ids_t0.shape[0]
+        self.seq_len = program_ids_t0.shape[1]
         obs_t0 = obs_t0.view(self.batch_size, self.seq_len, -1)
         args_t0 = args_t0.view(self.batch_size, self.seq_len, -1)
 
@@ -158,21 +161,30 @@ class NPI(pl.LightningModule, NPIStep):
 
         return loss
 
+    def enter_function(self):
+        self.reset()
+
     def convert_inputs(self, p_in: StepInput):
         x_obs = torch.tensor(p_in.env.reshape(self.batch_size, -1)).unsqueeze(1)
         x_pg = torch.tensor(np.array(p_in.program.program_id).reshape(self.batch_size, -1))
         x_args = torch.tensor(p_in.arguments.decode_all(), dtype=torch.float32).view(self.batch_size, -1).unsqueeze(1)
         return (x_obs, x_pg, x_args)
 
-    def step(self, env_obs, program, args):
+    def step(self, env_obs, program, args, h_t=None, c_t=None):
         """
         Forward inference for single task step.
         """
         self.testing = True
+        self.batch_size = 1
         self.seq_len = 1
+        if h_t is None:
+            h_t = torch.zeros((2, self.batch_size, self.hidden_size))
+        if c_t is None:
+            c_t = torch.zeros((2, self.batch_size, self.hidden_size))
+
         obs, id, args = self.convert_inputs(StepInput(env_obs, program, args))
         with torch.no_grad():
-            r_logit, program_ids_t1, args_t1 = self.predict(obs, id, args)
+            r_logit, program_ids_t1, args_t1 = self.predict(obs, id, args, h_t, c_t)
             
         r = nn.Sigmoid()(r_logit).item()
 
@@ -193,17 +205,17 @@ class NPI(pl.LightningModule, NPIStep):
 
         ret = StepOutput(r, program, arguments)
         self.testing = False
-        return ret
+        return ret, self.ht, self.ct
 
     def reset(self):
         self.ht = torch.zeros((2, self.batch_size, self.hidden_size))
         self.ct = torch.zeros((2, self.batch_size, self.hidden_size))
-
         
     def validation_step(self, data, idx):
         # Input Traces
         obs_t0, program_ids_t0, args_t0 = data[0]
-        self.seq_len = obs_t0.shape[1]
+        self.batch_size = program_ids_t0.shape[0]
+        self.seq_len = program_ids_t0.shape[1]
         obs_t0 = obs_t0.view(self.batch_size, self.seq_len, -1)
         args_t0 = args_t0.view(self.batch_size, self.seq_len, -1)
 

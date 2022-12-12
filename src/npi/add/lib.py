@@ -151,7 +151,7 @@ class AdditionTeacher(NPIStep):
     def exit_function(self):
         self.step_queue = self.step_queue_stack.pop()
 
-    def step(self, env_observation: np.ndarray, pg: Program, arguments: IntegerArguments) -> StepOutput:
+    def step(self, env_observation: np.ndarray, pg: Program, arguments: IntegerArguments, *args) -> StepOutput:
         if not self.step_queue:
             self.step_queue = self.sub_program[pg.program_id](env_observation, arguments)
         if self.step_queue:
@@ -271,7 +271,10 @@ def run_npi(addition_env, npi_runner, program, data):
 
     npi_runner.reset()
     npi_runner.display_env(addition_env, force=True)
-    npi_runner.npi_program_interface(addition_env, program, IntegerArguments())
+    if isinstance(npi_runner.model, AdditionTeacher):
+        npi_runner.npi_program_interface(addition_env, program, IntegerArguments())
+    else:
+        npi_runner.npi_program_interface_test(addition_env, program, IntegerArguments())
 
     data['result'] = addition_env.get_output()
     data['correct'] = data['result'] == data['expect']
